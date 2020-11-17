@@ -1,6 +1,7 @@
 package com.dqj.knowledgenavi.controller;
 
 import com.dqj.knowledgenavi.dataobject.ClassCodesDO;
+import com.dqj.knowledgenavi.dataobject.PatentBriefDO;
 import com.dqj.knowledgenavi.service.ClassCodesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -35,5 +36,33 @@ public class ClassCodesController {
                                               @RequestParam(value = "parentCode") String parentCode) {
         List<ClassCodesDO> classCodes = classCodesService.getByParentCode(table, parentCode);
         return classCodes;
+    }
+
+    /**
+     * 最下层的分类直接根据classId查
+     * @param classId
+     * @return
+     */
+    @RequestMapping(value = "/getPatentsByClassId", method = {RequestMethod.GET})
+    @ResponseBody
+    public List<PatentBriefDO> getPatentsByClassId(@RequestParam(value = "classId") String classId,
+                                                   @RequestParam(value = "pageNo") int pageNo,
+                                                   @RequestParam(value = "queryNum") int queryNum) {
+        List<PatentBriefDO> patents = classCodesService.getPatentsByClassId(classId, pageNo, queryNum);
+        return patents;
+    }
+
+    /**
+     * 不是最下层的分类需要根据前缀去数据库中查
+     * @param classId
+     * @return
+     */
+    @RequestMapping(value = "/getPatentsByClassIdPrefix", method = {RequestMethod.GET})
+    @ResponseBody
+    public List<PatentBriefDO> getPatentsByClassIdPrefix(@RequestParam(value = "classId") String classId,
+                                                         @RequestParam(value = "pageNo") int pageNo,
+                                                         @RequestParam(value = "queryNum") int queryNum) {
+        List<PatentBriefDO> patents = classCodesService.getPatentsByClassIdPrefix(classId, pageNo, queryNum);
+        return patents;
     }
 }

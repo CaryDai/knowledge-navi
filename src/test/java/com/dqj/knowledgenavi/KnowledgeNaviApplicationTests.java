@@ -4,16 +4,15 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.dqj.knowledgenavi.dataobject.ClassCodesDO;
 import com.dqj.knowledgenavi.dataobject.NodeDO;
+import com.dqj.knowledgenavi.dataobject.PatentBriefDO;
 import com.dqj.knowledgenavi.utils.TreeUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +68,67 @@ public class KnowledgeNaviApplicationTests {
 
             resList.add(classCodesDO);
             System.out.println(classCodesDO);
+        }
+    }
+
+    /**
+     * 添加patent_classID表信息，专利的分类号和公开号
+     * @throws IOException
+     */
+    @Test
+    public void addClassId() throws IOException {
+//        FileInputStream inputStream = new FileInputStream("D:\\论文\\知识导航平台构建\\专利分类\\专利\\基础科学\\A005_3.txt");
+//        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+//        String str;
+//        while ((str = bufferedReader.readLine()) != null) {
+//            System.out.println(str);
+//        }
+//        inputStream.close();
+//        bufferedReader.close();
+        String path = "D:\\论文\\知识导航平台构建\\专利分类\\专利\\农业科技";
+        File dir = new File(path);
+        String[] files = dir.list();
+        FileInputStream inputStream = null;
+        BufferedReader bufferedReader = null;
+        for (String f : files) {
+            inputStream = new FileInputStream(path + "\\" + f);
+            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            String str;
+            String classId = f.substring(0,f.indexOf("."));
+            while ((str = bufferedReader.readLine()) != null) {
+                String sql = "INSERT INTO `patent_classId` (`class_id`, `publication_no`) VALUES (?, ?);";
+                jdbcTemplate.update(sql, classId, str);
+            }
+            System.out.println(classId + "添加完毕！");
+        }
+        inputStream.close();
+        bufferedReader.close();
+    }
+
+    /**
+     * 测试查询专利信息
+     */
+    @Test
+    public void testGetPatentsByClassId() {
+        int num = 0;
+        while (num < 10) {
+            // 获取专利公开号
+            String sql = "select publication_no from patent_classId where class_id = 'A005_3' limit 10";
+            List<Map<String, Object>> publicationNos = jdbcTemplate.queryForList(sql);
+            for (Map<String,Object> map : publicationNos) {
+//                System.out.println(map.get("publication_no"));
+                String publicationNo = (String) map.get("publication_no");
+                // 根据公开号获取专利名等专利详细信息
+                try {
+                    String sql2 = "select name from patent where publication_no = '" + publicationNo + "'";
+                    Map<String, Object> patent = jdbcTemplate.queryForMap(sql2);
+                    System.out.println(patent.get("name"));
+                    num++;
+                    if (num == 10) {
+                        break;
+                    }
+                } catch (EmptyResultDataAccessException ignored) {}
+            }
         }
     }
 }
