@@ -139,6 +139,8 @@ public class ClassCodesService {
             if (publicationNos.size() == 0) {
                 break;
             }
+            int tmp = lastQueryRowPrefix;
+            // 遍历公开号
             for (Map<String,Object> map : publicationNos) {
                 String publicationNo = (String) map.get("publication_no");
                 // 根据公开号获取专利名等专利详细信息
@@ -163,6 +165,9 @@ public class ClassCodesService {
                         break;
                     }
                 } catch (EmptyResultDataAccessException ignored) {}
+            }
+            if (lastQueryRowPrefix == tmp) {
+                lastQueryRowPrefix += queryNum;
             }
         }
         recordPagePrefix.put(pageNo+1,lastQueryRowPrefix);

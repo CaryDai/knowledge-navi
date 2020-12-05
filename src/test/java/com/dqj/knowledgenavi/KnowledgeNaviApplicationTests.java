@@ -85,7 +85,7 @@ public class KnowledgeNaviApplicationTests {
 //        }
 //        inputStream.close();
 //        bufferedReader.close();
-        String path = "D:\\论文\\知识导航平台构建\\专利分类\\专利\\农业科技";
+        String path = "D:\\论文\\知识导航平台构建\\专利分类\\专利\\informationscience";
         File dir = new File(path);
         String[] files = dir.list();
         FileInputStream inputStream = null;
@@ -129,6 +129,29 @@ public class KnowledgeNaviApplicationTests {
                     }
                 } catch (EmptyResultDataAccessException ignored) {}
             }
+        }
+    }
+
+    /**
+     * 更新patent_classId表的专利名
+     */
+    @Test
+    public void updatePatentName() {
+        String sql1 = "select * from patent_classId limit 1000000, 1000000";
+        List<Map<String, Object>> publicationNos = jdbcTemplate.queryForList(sql1);
+        for (Map<String,Object> map : publicationNos) {
+            String publicationNo = (String) map.get("publication_no");
+            try {
+                String sql2 = "select name from patent where publication_no = '" + publicationNo + "'";
+                Map<String, Object> patent = jdbcTemplate.queryForMap(sql2);
+                String patentName = (String) patent.get("name");
+                if (patentName != null) {
+                    System.out.println(publicationNo);
+                    System.out.println(patentName);
+                    String sql3 = "update patent_classId set name = '" + patentName + "' where publication_no = '" + publicationNo + "'";
+                    jdbcTemplate.update(sql3);
+                }
+            } catch (Exception ignored) {}
         }
     }
 }
