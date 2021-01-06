@@ -6,7 +6,7 @@ package com.dqj.knowledgenavi.dataobject;
  * @Version 1.0
  * @Description
  */
-public class patentDetailDO {
+public class PatentDetailDO {
     /**
      * 专利名
      */
@@ -55,6 +55,18 @@ public class patentDetailDO {
      * 申请人地址
      */
     private String applicantAddress;
+    /**
+     * 主权项
+     */
+    private String sovereignty;
+
+    public String getSovereignty() {
+        return sovereignty;
+    }
+
+    public void setSovereignty(String sovereignty) {
+        this.sovereignty = sovereignty;
+    }
 
     public String getName() {
         return name;

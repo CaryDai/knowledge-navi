@@ -11,6 +11,15 @@ public class PatentBriefDO {
     private String inventors; // 发明人
     private String applicant;   // 申请人
     private String patentAbstract;
+    private String publicationNO;   // 公开号
+
+    public String getPublicationNO() {
+        return publicationNO;
+    }
+
+    public void setPublicationNO(String publicationNO) {
+        this.publicationNO = publicationNO;
+    }
 
     public String getName() {
         return name;

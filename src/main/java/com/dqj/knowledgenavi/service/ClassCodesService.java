@@ -2,6 +2,7 @@ package com.dqj.knowledgenavi.service;
 
 import com.dqj.knowledgenavi.dataobject.ClassCodesDO;
 import com.dqj.knowledgenavi.dataobject.PatentBriefDO;
+import com.dqj.knowledgenavi.dataobject.PatentDetailDO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -31,13 +32,31 @@ public class ClassCodesService {
     // key记录页码，value记录对应的lastQueryRow
     private HashMap<Integer,Integer> recordPage;
     private HashMap<Integer,Integer> recordPagePrefix;
+    private HashMap<String,Integer> startRowMap;
+    // 存储数字与专利类型的对应关系
+    private HashMap<Integer, String> patentTypeMap;
 
     public ClassCodesService() {
         recordPage = new HashMap<>();
         recordPagePrefix = new HashMap<>();
+        patentTypeMap = new HashMap<>();
         // 第1页是从第0条开始查
         recordPage.put(1,0);
         recordPagePrefix.put(1,0);
+        startRowMap = new HashMap<>();
+        startRowMap.put("A",1);
+        startRowMap.put("B",1335686);
+        startRowMap.put("C",16124307);
+        startRowMap.put("D",262170);
+        startRowMap.put("E",15245900);
+        startRowMap.put("I",16975401);
+
+        patentTypeMap.put(1,"发明专利");
+        patentTypeMap.put(2,"实用新型");
+        patentTypeMap.put(3,"外观设计");
+        patentTypeMap.put(8,"中国国家阶段的PCT发明专利申请");
+        patentTypeMap.put(9,"中国国家阶段的PCT实用新型专利申请");
+        patentTypeMap.put(4,"其他");
     }
 
     /**
@@ -82,12 +101,19 @@ public class ClassCodesService {
         // 有些公开号对应的专利可能不存在，所以要通过while循环来不断地查
         while (num < queryNum) {
             // 获取专利公开号
-            String sql = "select id,publication_no from patent_classId where class_id = '" + classId + "' limit " + lastQueryRow + ", " + queryNum;
+            String sql;
+            if (pageNo == 1 && classId.length() == 1) {
+                int startRow = startRowMap.get(classId);
+                sql = "select id,publication_no from patent_classId where class_id = '" + classId + "' and id >= " + startRow + " limit " + num + ", " + queryNum;
+            } else {
+                sql = "select id,publication_no from patent_classId where class_id = '" + classId + "' and id >= " + lastQueryRow + " limit " + num + ", " + queryNum;
+            }
             List<Map<String,Object>> publicationNos = jdbcTemplate.queryForList(sql);
             // 没有专利了
             if (publicationNos.size() == 0) {
                 break;
             }
+            int tmp = lastQueryRow;
             for (Map<String,Object> map : publicationNos) {
                 String publicationNo = (String) map.get("publication_no");
                 // 根据公开号获取专利名等专利详细信息
@@ -113,13 +139,16 @@ public class ClassCodesService {
                     }
                 } catch (EmptyResultDataAccessException ignored) {}
             }
+            if (lastQueryRow == tmp) {
+                lastQueryRow += queryNum;
+            }
         }
         recordPage.put(pageNo+1,lastQueryRow);
         return res;
     }
 
     /**
-     * 对于不是最下层的节点，根据分类号的前缀去查
+     * 不是最下层的节点，根据分类号的前缀去查
      * @param classId
      * @param pageNo
      * @return
@@ -133,7 +162,13 @@ public class ClassCodesService {
         // 有些公开号对应的专利可能不存在，所以要通过while循环来不断地查
         while (num < queryNum) {
             // 获取专利公开号
-            String sql = "select id,publication_no from patent_classId where class_id LIKE '" + classId + "%' limit " + lastQueryRowPrefix + ", " + queryNum;
+            String sql;
+            if (pageNo == 1 && classId.length() == 1) {
+                int startRow = startRowMap.get(classId);
+                sql = "select id,publication_no from patent_classId where class_id LIKE '" + classId + "%' and id >= " + startRow + " limit " + num + ", " + queryNum;
+            } else {
+                sql = "select id,publication_no from patent_classId where class_id LIKE '" + classId + "%' and id >= " + lastQueryRowPrefix + " limit " + num + ", " + queryNum;
+            }
             List<Map<String,Object>> publicationNos = jdbcTemplate.queryForList(sql);
             // 没有专利了
             if (publicationNos.size() == 0) {
@@ -151,12 +186,14 @@ public class ClassCodesService {
                     String inventors = (String) patent.get("inventors");
                     String applicant = (String) patent.get("applicant");
                     String patentAbstract = (String) patent.get("abstract");
+                    String publicationNO = (String) patent.get("publication_no");
 
                     PatentBriefDO patentBriefDO = new PatentBriefDO();
                     patentBriefDO.setName(name);
                     patentBriefDO.setInventors(inventors);
                     patentBriefDO.setApplicant(applicant);
                     patentBriefDO.setPatentAbstract(patentAbstract);
+                    patentBriefDO.setPublicationNO(publicationNO);
                     res.add(patentBriefDO);
 
                     num++;
@@ -172,6 +209,46 @@ public class ClassCodesService {
         }
         recordPagePrefix.put(pageNo+1,lastQueryRowPrefix);
         return res;
+    }
+
+    /**
+     * 根据公开号获取专利详细信息
+     * @param publicationNO
+     * @return
+     */
+    public PatentDetailDO queryPatent(String publicationNO) {
+        String sql = "select * from patent where publication_no = '" + publicationNO + "'";
+        Map<String, Object> patent = jdbcTemplate.queryForMap(sql);
+        String name = (String) patent.get("name");
+        String inventors = (String) patent.get("inventors");
+        String applicant = (String) patent.get("applicant");
+        String abstractCh = (String) patent.get("abstract");
+        String applicationNo = (String) patent.get("application_no");
+        String mainClassificationNo = (String) patent.get("main_classification_no");
+        int patentTypeNum = Integer.parseInt((String)patent.get("patent_type"));
+        String patentType = patentTypeMap.get(patentTypeNum);
+        String applicationDate = (String) patent.get("application_date");
+        String publicationDate = (String) patent.get("publication_date");
+        String classificationNo = (String) patent.get("classification_no");
+        String applicantAddress = (String) patent.get("applicant_address");
+        String sovereignty = (String) patent.get("sovereignty");
+
+        PatentDetailDO patentDetailDO = new PatentDetailDO();
+        patentDetailDO.setName(name);
+        patentDetailDO.setInventors(inventors);
+        patentDetailDO.setApplicant(applicant);
+        patentDetailDO.setAbstractCh(abstractCh);
+        patentDetailDO.setApplicationNo(applicationNo);
+        patentDetailDO.setPublicationNo(publicationNO);
+        patentDetailDO.setMainClassificationNo(mainClassificationNo);
+        patentDetailDO.setPatentType(patentType);
+        patentDetailDO.setApplicationDate(applicationDate);
+        patentDetailDO.setPublicationDate(publicationDate);
+        patentDetailDO.setClassificationNo(classificationNo);
+        patentDetailDO.setApplicantAddress(applicantAddress);
+        patentDetailDO.setSovereignty(sovereignty);
+
+        return patentDetailDO;
     }
 
     /**

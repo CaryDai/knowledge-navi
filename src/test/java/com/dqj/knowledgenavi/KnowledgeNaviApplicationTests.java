@@ -2,9 +2,10 @@ package com.dqj.knowledgenavi;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.dqj.knowledgenavi.dao.UserSubjectsDOMapper;
 import com.dqj.knowledgenavi.dataobject.ClassCodesDO;
 import com.dqj.knowledgenavi.dataobject.NodeDO;
-import com.dqj.knowledgenavi.dataobject.PatentBriefDO;
+import com.dqj.knowledgenavi.dataobject.UserSubjectsDO;
 import com.dqj.knowledgenavi.utils.TreeUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +18,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.dqj.knowledgenavi.utils.TreeUtil.listToTree;
+
 @SpringBootTest
 public class KnowledgeNaviApplicationTests {
 
     @Autowired
     JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private UserSubjectsDOMapper userSubjectsDOMapper;
 
     @Test
     void testTreeUtils() throws Exception {
@@ -37,13 +43,13 @@ public class KnowledgeNaviApplicationTests {
         }
 
         JSONArray result = TreeUtil.listToTree(list, "classCode", "parentCode", "children");
-//        System.out.println(JSON.toJSONString(result));
-        File f = new File("D:\\论文\\知识导航平台构建\\view-ui-project-4.0\\static\\ipc_h.json");
-        FileOutputStream fop = new FileOutputStream(f);
-        OutputStreamWriter writer = new OutputStreamWriter(fop, "UTF-8");
-        writer.append(JSON.toJSONString(result));
-        writer.close();
-        fop.close();
+        System.out.println(JSON.toJSONString(result));
+//        File f = new File("D:\\论文\\知识导航平台构建\\view-ui-project-4.0\\static\\ipc_h.json");
+//        FileOutputStream fop = new FileOutputStream(f);
+//        OutputStreamWriter writer = new OutputStreamWriter(fop, "UTF-8");
+//        writer.append(JSON.toJSONString(result));
+//        writer.close();
+//        fop.close();
     }
 
     @Test
@@ -137,7 +143,7 @@ public class KnowledgeNaviApplicationTests {
      */
     @Test
     public void updatePatentName() {
-        String sql1 = "select * from patent_classId limit 1000000, 1000000";
+        String sql1 = "select * from patent_classId limit 17000000, 1000000";
         List<Map<String, Object>> publicationNos = jdbcTemplate.queryForList(sql1);
         for (Map<String,Object> map : publicationNos) {
             String publicationNo = (String) map.get("publication_no");
@@ -153,5 +159,20 @@ public class KnowledgeNaviApplicationTests {
                 }
             } catch (Exception ignored) {}
         }
+    }
+
+    @Test
+    void constructUserSubjectTree(){
+        List<NodeDO> list = new ArrayList<>();
+        List<UserSubjectsDO> userSubjectsDOS = userSubjectsDOMapper.selectRecodesByPrefix("15957158337".substring(7));
+        for (UserSubjectsDO userSubjectsDO : userSubjectsDOS) {
+            String classCode = userSubjectsDO.getClassCode();
+            String parentCode = userSubjectsDO.getParentCode();
+            String className = userSubjectsDO.getClassName();
+            NodeDO node = new NodeDO(classCode,parentCode,className);
+            list.add(node);
+        }
+        JSONArray result = TreeUtil.listToTree(list, "class_code", "parent_code", "children");
+        System.out.println(JSON.toJSONString(result));
     }
 }

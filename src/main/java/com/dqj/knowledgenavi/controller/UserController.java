@@ -1,5 +1,7 @@
 package com.dqj.knowledgenavi.controller;
 
+import com.dqj.knowledgenavi.dataobject.EditNodeDO;
+import com.dqj.knowledgenavi.dataobject.PatentCheckNodesDO;
 import com.dqj.knowledgenavi.dataobject.UserInfoDO;
 import com.dqj.knowledgenavi.service.UserService;
 import com.dqj.knowledgenavi.service.model.UserModel;
@@ -11,6 +13,7 @@ import sun.misc.BASE64Encoder;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 /**
  * @Author dqj
@@ -62,4 +65,60 @@ public class UserController {
             return "False";
         }
     }
+
+    @RequestMapping(value = "/addSubject", method = {RequestMethod.POST})
+    @ResponseBody
+    public String addSubject(@RequestParam(value = "telephone") String telephone,
+                            @RequestParam(value = "userSubject") String userSubject) {
+        boolean res = userService.addSubject(telephone, userSubject);
+        if (res) {
+            return "True";
+        } else {
+            return "False";
+        }
+    }
+
+    @RequestMapping(value = "/updateUserSubjects", method = {RequestMethod.POST})
+    @ResponseBody
+    public String updateUserSubjects(@RequestBody EditNodeDO editNodeDO) {
+        System.out.println(editNodeDO.toString());
+        boolean res = userService.updateUserSubjects(editNodeDO);
+        if (res) {
+            return "True";
+        } else {
+            return "False";
+        }
+    }
+
+    @RequestMapping(value = "/updateUserPatents", method = {RequestMethod.POST})
+    @ResponseBody
+    public String updateUserPatents(@RequestBody List<PatentCheckNodesDO> list) {
+//        System.out.println(list);
+        boolean res = userService.updateUserPatents(list);
+        if (res) {
+            return "True";
+        } else {
+            return "False";
+        }
+    }
+
+    @RequestMapping(value = "/writeSubjectNameAndDescription", method = {RequestMethod.POST})
+    @ResponseBody
+    public String writeSubjectNameAndDescription(@RequestParam(value = "subjectName") String subjectName,
+                                                 @RequestParam(value = "subjectDescription") String subjectDescription) {
+        boolean res = userService.writeSubjectNameAndDescription(subjectName,subjectDescription);
+        if (res) {
+            return "True";
+        } else {
+            return "False";
+        }
+    }
+
+    @RequestMapping(value = "/getSubjectNameAndDescription", method = {RequestMethod.GET})
+    @ResponseBody
+    public UserInfoDO getSubjectNameAndDescription() {
+        return userService.getSubjectNameAndDescription();
+    }
+
+
 }

@@ -2,6 +2,7 @@ package com.dqj.knowledgenavi.controller;
 
 import com.dqj.knowledgenavi.dataobject.ClassCodesDO;
 import com.dqj.knowledgenavi.dataobject.PatentBriefDO;
+import com.dqj.knowledgenavi.dataobject.PatentDetailDO;
 import com.dqj.knowledgenavi.service.ClassCodesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -64,5 +65,12 @@ public class ClassCodesController {
                                                          @RequestParam(value = "queryNum") int queryNum) {
         List<PatentBriefDO> patents = classCodesService.getPatentsByClassIdPrefix(classId, pageNo, queryNum);
         return patents;
+    }
+
+    @RequestMapping(value = "/getPatentDetail", method = {RequestMethod.GET})
+    @ResponseBody
+    public PatentDetailDO getPatentDetail(@RequestParam(value = "publicationNO") String publicationNO) {
+        PatentDetailDO patentDetail = classCodesService.queryPatent(publicationNO);
+        return patentDetail;
     }
 }
