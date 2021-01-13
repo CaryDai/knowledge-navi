@@ -1,6 +1,8 @@
 package com.dqj.knowledgenavi.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.dqj.knowledgenavi.dataobject.EditNodeDO;
+import com.dqj.knowledgenavi.dataobject.PatentBriefDO;
 import com.dqj.knowledgenavi.dataobject.PatentCheckNodesDO;
 import com.dqj.knowledgenavi.dataobject.UserInfoDO;
 import com.dqj.knowledgenavi.service.UserService;
@@ -55,7 +57,7 @@ public class UserController {
     @RequestMapping(value = "/login", method = {RequestMethod.POST})
     @ResponseBody
     public String login(@RequestParam(value = "telephone") String telephone,
-                      @RequestParam(value = "password") String password) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+                        @RequestParam(value = "password") String password) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         boolean res = userService.validateLogin(telephone, this.EncodeByMd5(password));
         if (res) {
             System.out.println("登陆成功");
@@ -68,9 +70,8 @@ public class UserController {
 
     @RequestMapping(value = "/addSubject", method = {RequestMethod.POST})
     @ResponseBody
-    public String addSubject(@RequestParam(value = "telephone") String telephone,
-                            @RequestParam(value = "userSubject") String userSubject) {
-        boolean res = userService.addSubject(telephone, userSubject);
+    public String addSubject(@RequestParam(value = "userSubject") String userSubject) {
+        boolean res = userService.addSubject(userSubject);
         if (res) {
             return "True";
         } else {
@@ -120,5 +121,40 @@ public class UserController {
         return userService.getSubjectNameAndDescription();
     }
 
+    @RequestMapping(value = "/getUserSubjectTree", method = {RequestMethod.GET})
+    @ResponseBody
+    public JSONArray getUserSubjectTree(String num) {
+        return userService.constructUserSubjectTree(num);
+    }
 
+    @RequestMapping(value = "/getUserPatents", method = {RequestMethod.GET})
+    @ResponseBody
+    public List<PatentBriefDO> getUserPatents(String num) {
+        return userService.getUserPatents(num);
+    }
+
+    @RequestMapping(value = "/getUserPatentsByClassIdPrefix", method = {RequestMethod.GET})
+    @ResponseBody
+    public List<PatentBriefDO> getUserPatentsByClassIdPrefix(String classCode) {
+        return userService.getUserPatentsByClassIdPrefix(classCode);
+    }
+
+    @RequestMapping(value = "/getUserPatentsByClassId", method = {RequestMethod.GET})
+    @ResponseBody
+    public List<PatentBriefDO> getUserPatentsByClassId(String classCode) {
+        return userService.getUserPatentsByClassId(classCode);
+    }
+
+    @RequestMapping(value = "/addToMySubject", method = {RequestMethod.POST})
+    @ResponseBody
+    public String addToMySubject(@RequestParam(value = "rootClassCode") String rootClassCode,
+                                 @RequestParam(value = "patentName") String patentName,
+                                 @RequestParam(value = "publicationNo") String publicationNo) {
+        boolean res = userService.addToMySubject(rootClassCode, patentName, publicationNo);
+        if (res) {
+            return "True";
+        } else {
+            return "False";
+        }
+    }
 }

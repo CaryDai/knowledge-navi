@@ -252,6 +252,40 @@ public class ClassCodesService {
     }
 
     /**
+     * 查询相似专利
+     * @param publicationNO
+     * @param classCode
+     * @return
+     */
+    public List<PatentDetailDO> querySimilarPatents(String publicationNO,String classCode) {
+        List<PatentDetailDO> list = new ArrayList<>();
+        final int similarPatentsNum = 10;
+        int lastQueryId = 0;
+        int i = 0;
+        while (i < similarPatentsNum) {
+            String sql = "select * from patent_classId where id > " + lastQueryId + " and class_id like '" + classCode + "%'" + " limit 5";
+            List<Map<String,Object>> results = jdbcTemplate.queryForList(sql);
+            // 遍历公开号
+            for (Map<String,Object> map : results) {
+                String publicationNo = (String) map.get("publication_no");
+                int id = (int) map.get("id");
+                lastQueryId = Math.max(lastQueryId,id);
+                if (publicationNo.equals(publicationNO)) {
+                    continue;
+                }
+                try {
+                    PatentDetailDO patentDetailDO = queryPatent(publicationNo);
+                    list.add(patentDetailDO);
+                    if (++i == similarPatentsNum) {
+                        break;
+                    }
+                } catch (EmptyResultDataAccessException ignored) {}
+            }
+        }
+        return list;
+    }
+
+    /**
      * 工具方法，将select * 的结果都转化成list
      * @param resList
      * @param mapList

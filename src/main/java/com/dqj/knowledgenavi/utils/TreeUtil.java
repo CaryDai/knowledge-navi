@@ -40,8 +40,10 @@ public class TreeUtil {
     }
 
     public static JSONArray listToTree(List<?> list, String idStr, String pidStr, String childrenStr) {
+        // JSONArray: json数组，使用中括号[],只不过数组里面的项也是json键值对格式的
         JSONArray arr = JSONArray.parseArray(JSON.toJSONString(list));
         JSONArray r = new JSONArray();
+        // JSONObject: json对象，就是一个键对应一个值，使用的是大括号{}，如：{key:value}
         JSONObject hash = new JSONObject();
         //将数组转为Object的形式，key为数组中的id
         arr.forEach(x -> {

@@ -172,7 +172,7 @@ public class KnowledgeNaviApplicationTests {
             NodeDO node = new NodeDO(classCode,parentCode,className);
             list.add(node);
         }
-        JSONArray result = TreeUtil.listToTree(list, "class_code", "parent_code", "children");
+        JSONArray result = TreeUtil.listToTree(list, "classCode", "parentCode", "children");
         System.out.println(JSON.toJSONString(result));
     }
 }

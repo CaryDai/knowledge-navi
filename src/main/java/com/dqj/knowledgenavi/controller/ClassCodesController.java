@@ -70,7 +70,13 @@ public class ClassCodesController {
     @RequestMapping(value = "/getPatentDetail", method = {RequestMethod.GET})
     @ResponseBody
     public PatentDetailDO getPatentDetail(@RequestParam(value = "publicationNO") String publicationNO) {
-        PatentDetailDO patentDetail = classCodesService.queryPatent(publicationNO);
-        return patentDetail;
+        return classCodesService.queryPatent(publicationNO);
+    }
+
+    @RequestMapping(value = "/getSimilarPatents", method = {RequestMethod.GET})
+    @ResponseBody
+    public List<PatentDetailDO> getSimilarPatents(@RequestParam(value = "publicationNO") String publicationNO,
+                                                  @RequestParam(value = "classCode") String classCode) {
+        return classCodesService.querySimilarPatents(publicationNO,classCode);
     }
 }
