@@ -5,9 +5,9 @@ application.properties：项目配置信息
 controller文件夹：
 * ClassCodesController：专利相关接口
 * UserController：用户相关接口
-dao文件夹、dataobject文件夹、resources/mapping文件夹：均属于数据层，除dataobject文件夹中部分文件外，其余都由mybatis-generator插件自动生成。
-service文件夹：服务层方法
-utils文件夹：工具类
+* dao文件夹、dataobject文件夹、resources/mapping文件夹：均属于数据层，除dataobject文件夹中部分文件外，其余都由mybatis-generator插件自动生成。
+* service文件夹：服务层方法
+* utils文件夹：工具类
 
 ## 技术架构
 SpringBoot+Maven+MySQL+MyBatis
